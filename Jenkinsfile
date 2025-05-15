@@ -47,26 +47,17 @@ pipeline {
         sh "echo done"
       }
     }
+
+    stage('OCI Image BnP') {
+    steps {
+      container('kaniko') {
+        sh '/kaniko/executor -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo'
+    }
   }
 }
+  }
+  
+}
 
 
-stage('Package') {
-parallel {
-stage('Create Jarfile') {
-steps {
-container('maven') {
-sh 'mvn package -DskipTests'
-}
-}
-}
-stage('OCI Image BnP') {
-steps {
-container('kaniko') {
-sh '/kaniko/executor -f `pwd`/Dockerfile -c `pwd` --insecure
---skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo'
-}
-}
-}
-}
-}
+
