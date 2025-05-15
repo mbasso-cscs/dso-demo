@@ -41,6 +41,14 @@ pipeline {
       }
     }
 
+        stage('Deploy to Dev') {
+      steps {
+        // TODO
+        sh "echo done"
+      }
+    }
+  
+
     stage('OCI Image BnP') {
     steps {
       container('kaniko') {
