@@ -57,8 +57,10 @@ spec:
       hostPath:
         path: /tmp/trivycache/
     - name: jenkins-docker-cfg
-      secret:
-          secretName: regcred
+      projected:
+        sources:
+        - secret:
+          name: regcred
           items:
-          - key: .dockerconfigjson
-             path: config.json
+            - key: .dockerconfigjson
+              path: config.json
