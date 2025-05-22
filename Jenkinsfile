@@ -38,18 +38,15 @@ pipeline {
             }
           }
         }
-      }
+        stage('OCI Image BnP') { 
+          steps { 
+            container(name: 'kaniko') { 
+              sh '/kaniko/executor -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo' 
+            } 
+          } 
+        }  
+      }      
     }
-
-
-
-    stage('OCI Image BnP') {
-    steps {
-      container(name: 'kaniko') {
-        sh '/kaniko/executor --verbosity debug -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo'
-          }
-        }
-      }
     stage('Deploy to Dev') {
       steps {
         // TODO
