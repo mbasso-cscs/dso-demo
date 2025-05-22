@@ -11,7 +11,7 @@ pipeline {
       parallel {
         stage('Compile') {
           steps {
-            container('maven') {
+            container(name: 'maven') {
               sh 'mvn compile'
             }
           }
@@ -22,7 +22,7 @@ pipeline {
       parallel {
         stage('Unit Tests') {
           steps {
-            container('maven') {
+            container(name: 'maven') {
               sh 'mvn test'
             }
           }
@@ -33,7 +33,7 @@ pipeline {
       parallel {
         stage('Create Jarfile') {
           steps {
-            container('maven') {
+            container(name: 'maven') {
               sh 'mvn package -DskipTests'
             }
           }
@@ -45,8 +45,8 @@ pipeline {
 
     stage('OCI Image BnP') {
     steps {
-      container('kaniko') {
-        sh '/kaniko/executor --verbosity debug -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dsodemo:latest'
+      container(name: 'kaniko') {
+        sh '/kaniko/executor --verbosity debug -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo'
           }
         }
       }
