@@ -5,6 +5,7 @@ pipeline {
       defaultContainer 'maven'
       idleMinutes 1
     }
+
   }
   stages {
     stage('Build') {
@@ -14,11 +15,14 @@ pipeline {
             container(name: 'maven') {
               sh 'mvn compile'
             }
+
           }
         }
+
       }
     }
-    stage('Test') {
+
+    stage('Static Analysis') {
       parallel {
         stage('Unit Tests') {
           steps {
@@ -27,8 +31,36 @@ pipeline {
             }
           }
         }
+        stage('SCA') {
+          steps {
+            container('maven') {
+              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                sh 'mvn org.owasp:dependency-check-maven:check'
+              }
+            }
+          }
+          post {
+            always {
+              archiveArtifacts allowEmptyArchive: true, artifacts: 'target/dependency-check-report.html', fingerprint: true, onlyIfSuccessful: true
+              // dependencyCheckPublisher pattern: 'report.xml'
+            }
+          }
+        }
+        stage('OSS License Checker') {
+          steps {
+            container('licensefinder') {
+              sh 'ls -al'
+              sh '''#!/bin/bash --login
+                      /bin/bash --login
+                      rvm use default
+                      gem install license_finder
+                      license_finder '''
+            }
+          }
+        }
       }
     }
+
     stage('Package') {
       parallel {
         stage('Create Jarfile') {
@@ -38,26 +70,22 @@ pipeline {
             }
           }
         }
-        stage('OCI Image BnP') { 
-          steps { 
-            container(name: 'kaniko') { 
-              sh '/kaniko/executor -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo' 
-            } 
-          } 
-        }  
-      }      
-    }
-    stage('Deploy to Dev') {
-      steps {
-        // TODO
-        sh "echo done"
+        stage('OCI Image BnP') {
+          steps {
+            container(name: 'kaniko') {
+              sh '/kaniko/executor -f `pwd`/Dockerfile -c `pwd` --insecure --skip-tls-verify --cache=true --destination=docker.io/mbassocscs/dso-demo'
+            }
+          }
+        }
       }
     }
-  
-    
+
+
+    stage('Deploy to Dev') {
+      steps {
+        sh 'echo done'
+      }
+    }
+
   }
-  
 }
-
-
-
